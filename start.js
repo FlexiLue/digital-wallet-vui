@@ -7,11 +7,12 @@ var say = require('say');
 const Speaker = require('speaker');
 
 let DEEPSPEECH_MODEL; // path to deepspeech model directory
+const microphoneInput = "hw:1,0";
 if (process.env.DEEPSPEECH_MODEL) {
 	DEEPSPEECH_MODEL = process.env.DEEPSPEECH_MODEL;
 }
 else {
-	DEEPSPEECH_MODEL = __dirname + '/german_models/german';
+	DEEPSPEECH_MODEL = __dirname + '/english_models/deepspeech-0.9.3-models';
 }
 
 let SILENCE_THRESHOLD = 500; // how many milliseconds of inactivity before processing the audio
@@ -208,7 +209,7 @@ function startMicrophone(callback) {
 		rate: '16000',
 		channels: '1',
 		debug: false,
-		device: "hw:3,0",
+		device: microphoneInput,
 		fileType: 'wav'
 	});
 	var stream = microphone.getAudioStream();
