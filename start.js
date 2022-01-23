@@ -5,6 +5,7 @@ const fs = require('fs');
 const wav = require('wav');
 var say = require('say');
 const Speaker = require('speaker');
+const { exit } = require('process');
 
 let DEEPSPEECH_MODEL; // path to deepspeech model directory
 const microphoneInput = "hw:1,0";
@@ -12,7 +13,7 @@ if (process.env.DEEPSPEECH_MODEL) {
 	DEEPSPEECH_MODEL = process.env.DEEPSPEECH_MODEL;
 }
 else {
-	DEEPSPEECH_MODEL = __dirname + '/english_models/deepspeech-0.9.3-models';
+	DEEPSPEECH_MODEL = __dirname + '/german_models/german';
 }
 
 let SILENCE_THRESHOLD = 500; // how many milliseconds of inactivity before processing the audio
@@ -242,33 +243,39 @@ function sayWrapper(text){
 let ueberweisungCounter = 0;
 
 function onRecognize(results) {
+	console.log(ueberweisungCounter, activated)
 	console.log('recognized:', results);
 	if (results.text === 'stop') {
 		console.log('stoppt...');
 		stopMicrophone();
 		process.exit();
- 	} else if (results.text === 'danke'){
+ 	} if (results.text === 'danke'){
 		sayWrapper('Kein Problem. Kann ich dir noch mit etwas helfen?')
-	} else if (results.text === 'hallo geldbeutel'){
+	} if (results.text === 'hallo geldbeutel'){
 		activated = true;
 		sayWrapper('Hallo Felix. Du befindest dich auf deinem Konto Mastercard. Wie kann ich dir helfen?')
 	} else if (activated) {
-		}else if (ueberweisungCounter == 0){
-			if ('sende eine überweisung an mark'){	
-				ueberweisungCounter = 1;
+		if (ueberweisungCounter == 0){
+			if (results.text === 'sende eine überweisung an mark'){	
 				sayWrapper('Welchen Betrag soll ich an Mark überweisen?')
+				ueberweisungCounter = 1;
+				exit;
 			}
-		} else if(ueberweisungCounter == 1){
-			if('hundert euro'){
+		}else if(ueberweisungCounter == 1){
+			if(results.text === 'hundert euro'){
 				ueberweisungCounter = 2;
 				sayWrapper('Wann soll die Überweisung stattfinden? Nenne mir ein Datum oder sofort')
+				exit;
 			}
 		} else if(ueberweisungCounter == 2){
-			if('sofort'){
+			if(results.text === 'sofort'){
 				sayWrapper('Bitte bestätige die Überweisung per TAN oder auf deinem entsprechenden Gerät')
-				setTimeout(sayWrapper('Danke. Die Überweisung von 100 Euro wurde so eben an Mark gesendet.'), 000);
+				setTimeout(function (){
+					sayWrapper('Danke. Die Überweisung von 100 Euro wurde so eben an Mark gesendet.')
+				}, 10000);
 				ueberweisungCounter = 0;
 			}
+		}
 	}
 }
 
