@@ -229,6 +229,18 @@ function stopMicrophone() {
 	resetAudioStream();
 }
 
+function sayWrapper(text){
+	say.speak(text, (err) => {
+		if (err) {
+			return console.error(err);
+		}
+	
+		console.log('Text has been spoken.');
+	});
+}
+
+let ueberweisungCounter = 0;
+
 function onRecognize(results) {
 	console.log('recognized:', results);
 	if (results.text === 'stop') {
@@ -236,32 +248,27 @@ function onRecognize(results) {
 		stopMicrophone();
 		process.exit();
  	} else if (results.text === 'danke'){
-		say.speak('No problem. Is there anything else I can help you with?', (err) => {
-			if (err) {
-				return console.error(err);
-			}
-		
-			console.log('Text has been spoken.');
-		});
+		sayWrapper('Kein Problem. Kann ich dir noch mit etwas helfen?')
 	} else if (results.text === 'hallo geldbeutel'){
 		activated = true;
-		say.speak('Hallo Felix. You are on your Mastercard. How can I help you?', (err) => {
-			if (err) {
-				return console.error(err);
-			}
-		
-			console.log('Text has been spoken.');
-		});
+		sayWrapper('Hallo Felix. Du befindest dich auf deinem Konto Mastercard. Wie kann ich dir helfen?')
 	} else if (activated) {
-		if(results.text === "sag mir die letzten transaktionen"){
-			say.speak('Your last transactions were: Amazon at 12th of march', (err) => {
-				if (err) {
-					return console.error(err);
-				}
-			
-				console.log('Text has been spoken.');
-			});
-		}
+		}else if (ueberweisungCounter == 0){
+			if ('sende eine überweisung an mark'){	
+				ueberweisungCounter = 1;
+				sayWrapper('Welchen Betrag soll ich an Mark überweisen?')
+			}
+		} else if(ueberweisungCounter == 1){
+			if('hundert euro'){
+				ueberweisungCounter = 2;
+				sayWrapper('Wann soll die Überweisung stattfinden? Nenne mir ein Datum oder sofort')
+			}
+		} else if(ueberweisungCounter == 2){
+			if('sofort'){
+				sayWrapper('Bitte bestätige die Überweisung per TAN oder auf deinem entsprechenden Gerät')
+				setTimeout(sayWrapper('Danke. Die Überweisung von 100 Euro wurde so eben an Mark gesendet.'), 000);
+				ueberweisungCounter = 0;
+			}
 	}
 }
 
